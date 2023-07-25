@@ -29,6 +29,11 @@ def sitemap():
 def handle_hello():
 
     # this is how you can use the Family datastructure by calling its methods
+    try:
+        jackson_family
+    except NameError:
+        return jsonify({"error" : "Namerror"}), 500
+    
     members = jackson_family.get_all_members()
     if members:
         response_body = {
@@ -41,6 +46,11 @@ def handle_hello():
 @app.route('/members/<int:member_id>', methods=['GET'])
 def get_one_member(member_id):
 
+    try:
+        jackson_family
+    except NameError:
+        return jsonify({"error" : "Namerror"}), 500
+
     member = jackson_family.get_member(member_id)
     if member:
         response_body = {
@@ -52,25 +62,34 @@ def get_one_member(member_id):
 
 @app.route('/members', methods=['POST'])
 def add_one_member():
+    try:
+        jackson_family
+    except NameError:
+        return jsonify({"error" : "Namerror"}), 500
+    
+    member = request.get_json(force = True)
 
-    members = jackson_family.add_member()
-    if members:
+    jackson_family.add_member(member)
+
+    if member:
         response_body = {
-            "family_member": members
+            "family_member_added": member,
+            "all_family" : jackson_family.get_all_members()
         }
         return jsonify(response_body), 200
     else:
-        return jsonify({"error"}), 400
+        return jsonify({"error": "Member not found"}), 404
 
 @app.route('/members/<int:member_id>', methods=['DELETE'])
 def delete_one_member(member_id):
-
-    member = jackson_family.delete_member(member_id)
-    if member:
-        response_body = {
-            "family_member": member
-        }
-        return jsonify(response_body), 200
+    try:
+        jackson_family
+    except NameError:
+        return jsonify({"error" : "Namerror"}), 500
+    
+    member_deleted = jackson_family.delete_member(member_id)
+    if member_deleted:
+        return jsonify({"success, member delete": member_deleted})
     else:
         return jsonify({"error": "Member not found"}), 404
     
